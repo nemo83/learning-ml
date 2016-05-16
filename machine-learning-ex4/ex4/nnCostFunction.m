@@ -62,22 +62,49 @@ Theta2_grad = zeros(size(Theta2));
 %               and Theta2_grad from Part 2.
 %
 
+% recode y to Y
+I = eye(num_labels);
+Y = zeros(m, num_labels);
+for i=1:m
+  Y(i, :)= I(y(i), :);
+end
 
+a1 = X;
+z2 = Theta1 * [ones(m, 1) a1]';
+a2 = sigmoid(z2);
+z3 = Theta2 * [ones(1, m); a2];
+a3 = sigmoid(z3);
+H = a3';
 
+J = sum(sum(- Y .* log(H)) - sum((1 - Y) .* log (1 - H)));
 
+J = J / m;
 
+J = J + ( lambda / (2 * m) ) * (sum(sum(Theta1(:,2:end) .^ 2)) + sum(sum(Theta2(:,2:end) .^ 2)));
 
+Theta1_temp = Theta1_grad(:, 2:end);
+Theta2_temp = Theta2_grad(:, 2:end);
 
+for i=1:m
+	aOne = X(i,:);
+	zTwo = Theta1 * [1 aOne]';
+	aTwo = sigmoid(zTwo);
+	zThree = Theta2 * [1; aTwo];
+	aThree = sigmoid(zThree);
 
+	Yk = zeros(num_labels, 1);
+	Yk(y(i)) = 1;
+	dThree = aThree - Yk;
 
+	dTwo = (Theta2' * dThree) .* [1; sigmoidGradient(zTwo)];
+	dTwo = dTwo(2:end);
+	
+	Theta2_grad = Theta2_grad + dThree * [1; aTwo]'; %delta2
+	Theta1_grad = Theta1_grad + dTwo * [1 aOne]; %delta1
+end;
 
-
-
-
-
-
-
-
+Theta2_grad = Theta2_grad ./ m;
+Theta1_grad = Theta1_grad ./ m;
 
 
 % -------------------------------------------------------------
